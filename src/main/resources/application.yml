@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      database: productsdb
+      host: localhost
+      port: 27017
+      username: admin
+      password: pass
+      authentication-database: admin
+
+
+#de:
+#  flapdoodle:
+#    mongodb:
+#      embedded:
+#        version: 5.0.5
