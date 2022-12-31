@@ -4,6 +4,7 @@ import com.glenneligio.reactive.dto.ProductDto;
 import com.glenneligio.reactive.entity.Product;
 import com.glenneligio.reactive.service.ProductService;
 import com.glenneligio.reactive.util.AppUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(ProductController.class)
+@Slf4j
 public class ProductControllerTest {
 
     @Autowired
@@ -110,15 +112,15 @@ public class ProductControllerTest {
     @Test
     @DisplayName("Create Product and returns the Product created")
     void saveProduct_withProperPayload_returns201CreatedWithNewProduct() {
+        ProductDto dtoRequest = AppUtils.entityToDto(p1);
+        Product productToBeSaved = AppUtils.dtoToEntity(dtoRequest);
+        log.info("Product to be saved {}", productToBeSaved);
         Mono<Product> savedProductMono = Mono.just(p1);
-        Mono<ProductDto> dtoRequest = Mono.just(AppUtils.entityToDto(p1));
-        Mono<Product> productToSaveMono = dtoRequest.map(AppUtils::dtoToEntity);
-        when(service.saveProduct(productToSaveMono)).thenReturn(savedProductMono);
+        when(service.saveProduct(productToBeSaved)).thenReturn(savedProductMono);
 
         Mono<ProductDto> dtoResponse = webTestClient.post()
                 .uri("/products")
-                .body(dtoRequest, ProductDto.class)
-                .header("Content-Type", "application/json")
+                .bodyValue(AppUtils.entityToDto(p1))
                 .exchange()
                 .expectStatus().isOk() // TODO: Configure the endpoint so that Response is 201 Created
                 .returnResult(ProductDto.class)
@@ -128,5 +130,38 @@ public class ProductControllerTest {
                 .expectSubscription()
                 .expectNext(AppUtils.entityToDto(p1))
                 .expectComplete();
+    }
+
+    @Test
+    @DisplayName("Update Product and returns 200 OK with updated Product")
+    void updateProduct_withProperPayload_returns200OkWithUpdatedProduct() {
+        ProductDto dtoRequest = AppUtils.entityToDto(p1);
+        String validId = p1.getId();
+        when(service.updateProduct(AppUtils.dtoToEntity(dtoRequest), validId)).thenReturn(Mono.just(p1));
+
+        Mono<ProductDto> dtoResponse = webTestClient.put()
+                .uri("/products/" + validId)
+                .body(Mono.just(dtoRequest), ProductDto.class)
+                .exchange()
+                .expectStatus().isOk()
+                .returnResult(ProductDto.class)
+                .getResponseBody().single();
+
+        StepVerifier.create(dtoResponse)
+                .expectSubscription()
+                .expectNext(dtoRequest)
+                .expectComplete();
+    }
+
+    @Test
+    @DisplayName("Delete Product using valid Id returns 200OK")
+    void deleteProduct_withValidId_returns200OK() {
+        String validId = p1.getId();
+        when(service.deleteProduct(validId)).thenReturn(Mono.empty());
+
+        webTestClient.delete()
+                .uri("/products/" + validId)
+                .exchange()
+                .expectStatus().isOk();
     }
 }

@@ -41,18 +41,17 @@ public class ProductController {
     }
 
     @PostMapping
-    public Mono<ProductDto> saveProduct(@RequestBody Mono<ProductDto> monoDto) {
-        monoDto.log().subscribe();
-        Mono<Product> savedProduct = service.saveProduct(monoDto.map(AppUtils::dtoToEntity))
-                .log();
+    public Mono<ProductDto> saveProduct(@RequestBody ProductDto dto) {
+        log.info("Saving product {}", dto);
+        Mono<Product> savedProduct = service.saveProduct(AppUtils.dtoToEntity(dto));
         return savedProduct.map(AppUtils::entityToDto);
     }
 
     @PutMapping("/{id}")
-    public Mono<ProductDto> updateProduct(@RequestBody Mono<ProductDto> monoDto,
+    public Mono<ProductDto> updateProduct(@RequestBody ProductDto dto,
                                           @PathVariable String id) {
-        log.info("Updating product with id {} using data {}", id, monoDto);
-        return service.updateProduct(monoDto.map(AppUtils::dtoToEntity), id)
+        log.info("Updating product with id {} using data {}", id, dto);
+        return service.updateProduct(AppUtils.dtoToEntity(dto), id)
                 .map(AppUtils::entityToDto);
     }
 

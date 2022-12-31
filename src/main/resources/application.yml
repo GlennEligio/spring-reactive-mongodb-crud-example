@@ -7,10 +7,3 @@ spring:
       username: admin
       password: pass
       authentication-database: admin
-
-
-#de:
-#  flapdoodle:
-#    mongodb:
-#      embedded:
-#        version: 5.0.5

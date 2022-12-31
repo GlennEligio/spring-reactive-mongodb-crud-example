@@ -31,15 +31,15 @@ public class ProductService {
         return repository.findByPriceBetween(Range.closed(min, max));
     }
 
-    public Mono<Product> saveProduct(Mono<Product> productMono) {
-        log.info("Saving product {}", productMono);
-        return productMono.flatMap(repository::save);
+    public Mono<Product> saveProduct(Product product) {
+        log.info("Saving product {}", product);
+        return repository.save(product);
     }
 
-    public Mono<Product> updateProduct(Mono<Product> productMono, String id) {
-        log.info("Updating product with id {}, using data {}", id, productMono);
+    public Mono<Product> updateProduct(Product product, String id) {
+        log.info("Updating product with id {}, using data {}", id, product);
         return repository.findById(id)
-                .flatMap(p -> productMono)
+                .flatMap(p -> Mono.just(product))
                 .doOnNext(p -> p.setId(id))
                 .flatMap(repository::save);
     }
