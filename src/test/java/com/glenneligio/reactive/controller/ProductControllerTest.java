@@ -62,7 +62,7 @@ public class ProductControllerTest {
                 .expectNext(AppUtils.entityToDto(p1))
                 .expectNext(AppUtils.entityToDto(p2))
                 .expectNext(AppUtils.entityToDto(p3))
-                .expectComplete();
+                .verifyComplete();
     }
 
     @Test
@@ -82,7 +82,8 @@ public class ProductControllerTest {
         StepVerifier.create(productMonoResult)
                 .expectSubscription()
                 .expectNext(AppUtils.entityToDto(p1))
-                .expectComplete();
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -106,7 +107,8 @@ public class ProductControllerTest {
         StepVerifier.create(productFluxResult)
                 .expectSubscription()
                 .expectNextMatches(p -> p.getPrice() > min && p.getPrice() < max)
-                .expectComplete();
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -129,7 +131,8 @@ public class ProductControllerTest {
         StepVerifier.create(dtoResponse)
                 .expectSubscription()
                 .expectNext(AppUtils.entityToDto(p1))
-                .expectComplete();
+                .expectComplete()
+                .verify();
     }
 
     @Test
@@ -150,7 +153,8 @@ public class ProductControllerTest {
         StepVerifier.create(dtoResponse)
                 .expectSubscription()
                 .expectNext(dtoRequest)
-                .expectComplete();
+                .expectComplete()
+                .verify();
     }
 
     @Test

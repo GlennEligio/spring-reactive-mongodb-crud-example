@@ -8,10 +8,6 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 @SpringBootTest
 class ApplicationTests {
-
-	@Autowired
-	private ReactiveMongoTemplate reactiveMongoTemplate;
-
 	@Test
 	void contextLoads() {
 	}

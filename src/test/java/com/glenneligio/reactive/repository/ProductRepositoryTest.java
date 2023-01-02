@@ -2,29 +2,48 @@ package com.glenneligio.reactive.repository;
 
 import com.glenneligio.reactive.entity.Product;
 import com.glenneligio.reactive.repo.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Range;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 @DataMongoTest
-@ExtendWith(SpringExtension.class)
+@Testcontainers
+@Slf4j
 @ActiveProfiles("test")
 public class ProductRepositoryTest {
 
     @Autowired
     private ProductRepository repository;
 
+    @Container
+    public static MongoDBContainer container = new MongoDBContainer(DockerImageName.parse("mongo:4.4.3"));
+
+    @DynamicPropertySource
+    static void mongoDbProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", container::getReplicaSetUrl);
+    }
+
     private Product p1, p2, p3;
+
+    @BeforeAll
+    static void initAll() {
+        container.start();
+    }
 
     @BeforeEach
     void setup() {
@@ -47,7 +66,9 @@ public class ProductRepositoryTest {
 
         StepVerifier.create(resultProductFlux)
                 .expectSubscription()
-                .expectNextMatches(p -> p.getPrice() > 18 && p.getPrice() < 20)
-                .expectComplete();
+                .expectNext(p1)
+                .expectNext(p2)
+                .expectComplete()
+                .verify();
     }
 }
